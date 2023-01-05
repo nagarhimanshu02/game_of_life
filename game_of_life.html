@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Game Of Life</title>
+        <style>
+        #game_of_life td{width: 8px;height: 8px;border: 1px solid #4d4d4d;cursor: pointer;}
+        #game_of_life{text-align: center;margin: auto;}
+        .clicked{background-color: black;}
+        button {width: 50px; height: 25px; font-weight: 800; border: 1px solid; color: #4d4d4d;cursor:pointer}
+        #start_game{background-color: #62ff00;}
+        #close_game{background-color: #ff7d7d;}
+        #reset_game{background-color: #ffffff;}
+        .btn_cls{display: block;text-align: center;margin-top: 10px;}
+        </style>
+    </head>
+    <body>
+        <table id="game_of_life"></table>
+        <div class="btn_cls">
+            <button id="start_game">Start</button>
+            <button id="close_game">Stop</button>
+            <button id="reset_game">Clear</button>    
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>  
+        <script>
+            var gameOfLife = document.getElementById("game_of_life");
+            var cellRows = 25; 
+            var cellCols = 25;
+            var go;
+            var grid = Array.from({length: cellRows}, row => Array(cellCols).fill(false));
+            $("#game_of_life").html(("<tr>" + "<td><\/td>".repeat(cellCols) + "</tr>").repeat(cellRows));
+
+            $(document).on('click', "#start_game", function(){
+                startGame();
+            });
+            $(document).on('click', "#close_game", function(){
+                closeGame();
+            });
+            $(document).on('click', "#reset_game", function(){
+                resetGame();
+            });
+
+            $(document).on('click', "#game_of_life", function(e){ 
+                setCellColor(e.target.cellIndex, e.target.parentNode.rowIndex);
+            });
+
+            // shows ouptut board
+            function showGameBoard() {
+                grid.forEach(function(row, y){
+                    row.forEach(function(cell, x){
+                        gameOfLife.rows[y].cells[x].classList.toggle("clicked", cell);
+                    });
+                });
+            }
+            // set color of cell
+            function setCellColor(x, y) {
+                grid[y][x] = !grid[y][x];
+                showGameBoard();
+            }
+            // reset game
+            function resetGame() {
+                closeGame();
+                grid.forEach(function(row) {
+                    row.fill(false);
+                });
+                showGameBoard();
+            }
+            // calculate height
+            function calculateHeight(x, y) {
+                return [
+                    [x-1,y-1], 
+                    [x,y-1], 
+                    [x+1,y-1], 
+                    [x-1,y], 
+                    [x+1,y], 
+                    [x-1,y+1], 
+                    [x,y+1], 
+                    [x+1,y+1]
+                    ].reduce((sum, [x, y]) => sum + isCellAlive(x, y), 0);
+            }
+            // check for cell alive or not
+            function isCellAlive(x, y) {
+                return !!grid[y]?.[x];
+            }
+            // check is cell is alive or dead
+            function isCellLiveOrDead(height, x, y) {
+                return height == 2 ? isCellAlive(x, y) : height == 3;
+            }
+            // create future generation of cell 
+            function futureGeneration() {
+                grid = grid.map((row, y) => 
+                    row.map((cell, x) => isCellLiveOrDead(calculateHeight(x, y), x, y))
+                );
+                showGameBoard();
+            }
+            // start game
+            function startGame() {
+                closeGame();
+                go = setInterval(futureGeneration, 200);
+            }
+            // close game
+            function closeGame() {
+                clearInterval(go);
+            }
+        </script>
+    </body>
+</html>
